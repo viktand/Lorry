@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Lorry</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+  <string name="cancel">100</string>
+</resources>

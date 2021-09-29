@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+
+<LinearLayout
+    android:id="@+id/authpanel"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Цифровые перевозки"
+        android:textAlignment="center"
+        android:textSize="10pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60px"
+        android:text="Для начала работы требуется авторизация"
+        android:textAlignment="center"
+        android:textSize="8pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+
+    <EditText
+        android:inputType="phone"
+        android:layout_width="match_parent"
+        android:layout_height="57.5dp"
+        android:id="@+id/editPhone"
+        android:layout_marginHorizontal="20px"
+        android:layout_marginTop="10px"
+        android:hint="Номер телефона"/>
+
+    <EditText
+        android:inputType="numberPassword"
+        android:layout_width="match_parent"
+        android:layout_height="57.5dp"
+        android:id="@+id/editPassword"
+        android:layout_marginHorizontal="20px"
+        android:layout_marginTop="10px"
+        android:hint="Пароль"/>
+
+    <Button
+        android:text="ВОЙТИ"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20px"
+        android:id="@+id/loginbutton"/>
+   
+    <Button
+        android:text="Получить пароль в СМС"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20px"
+        android:id="@+id/newpassbutton"/>
+</LinearLayout>

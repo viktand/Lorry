@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<LinearLayout
+    android:id="@+id/tripview"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12pt"
+        android:layout_margin="5px"
+        android:textAlignment="center"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10px"
+        android:layout_marginTop="20px"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Индекс места погрузки:"
+            android:textSize="10pt"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+        <TextView
+            android:id="@+id/indexload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10pt"
+            android:textSize="10pt"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+            
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10px"
+        android:layout_marginTop="20px"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Номер рейса:"
+            android:textSize="10pt"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+        <TextView
+            android:id="@+id/tripnumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10pt"
+            android:textSize="10pt"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+            
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60px"
+        android:text="Погрузка"
+        android:textAlignment="textStart"
+        android:layout_marginLeft="10px"        
+        android:textSize="12pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+        android:id="@+id/loadPlace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10pt"
+        android:layout_gravity="left"
+        android:textAlignment="textStart"       
+        android:textSize="10pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+        android:id="@+id/loadTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10pt"
+        android:layout_gravity="left"
+        android:textAlignment="textStart"       
+        android:textSize="12pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+
+     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60px"
+        android:text="Разгрузка"
+        android:textAlignment="textStart"
+        android:layout_marginLeft="10px"        
+        android:textSize="12pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+        android:id="@+id/unloadPlace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10pt"
+        android:layout_gravity="left"
+        android:textAlignment="textStart"       
+        android:textSize="10pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+        android:id="@+id/unloadTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10pt"
+        android:layout_gravity="left"
+        android:textAlignment="textStart"       
+        android:textSize="12pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60px"
+        android:text="Автомобиль"
+        android:textAlignment="textStart"
+        android:layout_marginLeft="10px"        
+        android:textSize="12pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+        android:id="@+id/car"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10pt"
+        android:layout_gravity="left"
+        android:textAlignment="textStart"       
+        android:textSize="12pt"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/abc_action_bar_content_inset_with_nav"
+        android:layout_marginHorizontal="20px"
+        android:layout_marginTop="20px"
+        android:id="@+id/connectbutton"
+        />
+
+</LinearLayout>
