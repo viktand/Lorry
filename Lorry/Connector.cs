@@ -114,6 +114,30 @@ namespace Lorry
             });
         }
 
+        internal Task<int> NextTrip(bool value, int trip)
+        {
+            return Task.Run(() => 
+            {
+                var url = Server + $"/mobile/trips/{trip}/confirm-finish";
+                var json = JsonConvert.SerializeObject(new Confirm { Ready = value });
+                try
+                {
+                    var result = url.PostJsonToUrl(json, webReq =>
+                    {
+                        webReq.Headers["authorization"] = TokenType + " " + Token;
+                    });
+                    return 200;
+                }catch(Exception e)
+                {
+                    if (e.Message.Contains("401"))
+                    {
+                        return 401;
+                    }
+                    return 0;
+                }
+            });
+        }
+
         internal Task<DriverProfile> LoadProfile()
         {
             return Task.Run(() =>
@@ -128,8 +152,12 @@ namespace Lorry
                     var response = JsonConvert.DeserializeObject<DriverProfile>(result);
                     return response;
                 }
-                catch
-                {
+                catch(Exception e)
+                {                   
+                    if (e.Message.Contains("401"))
+                    {
+                        return new DriverProfile { driver = new Driver { id = 0 } };
+                    }
                     return null;
                 }
             });

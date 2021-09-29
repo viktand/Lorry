@@ -10,6 +10,8 @@
     <include layout="@layout/login_view"/>
     <include layout="@layout/profile_view"/>
     <include layout="@layout/trip_view"/>
+    <include layout="@layout/closetrip_view"/>
+    <include layout="@layout/tripsearch_view"/>
         
 
     <ProgressBar
@@ -17,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:indeterminate="true"
-        android:layout_marginTop="12pt" 
+        android:layout_marginTop="25pt" 
         android:id="@+id/spinner" />
     
     <com.google.android.material.bottomnavigation.BottomNavigationView

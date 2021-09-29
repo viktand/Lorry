@@ -109,6 +109,7 @@ namespace Lorry.Dto
         public object company { get; set; }
         public List<Role> roles { get; set; }
         public List<object> permissions { get; set; }
+        public List<Car> cars { get; set; }
         public BaseFarm base_farm { get; set; }
     }
 

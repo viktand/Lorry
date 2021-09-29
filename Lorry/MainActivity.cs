@@ -22,12 +22,14 @@ namespace Lorry
     public class MainActivity : AppCompatActivity, BottomNavigationView.IOnNavigationItemSelectedListener
     {
         private Connector _connector;
-        private Timer _timer, _timer2, _timer3;
+        private Timer _timer, _timer2, _timer3, _timerRequest;
         private bool _loadMode;
         private int _timeslotId;
         private int _driverId;
         private int _stamp;
         private string _loadtime;
+        private Views _timerTask;
+        private bool _searhMode;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -44,20 +46,19 @@ namespace Lorry
             var isLogin = Preferences.Get("isLogin", "no");
             if (isLogin.Equals("no")) // Если нет авторизации
             {
-                SelectViewMode(0);                
+                SelectViewMode(Views.Login);                
             }
             else
             {
-                SelectViewMode(1);
+                SelectViewMode(Views.Profile);
                 _connector.Server = Preferences.Get("server", "");
                 _connector.Token = Preferences.Get("token", "");
                 _connector.TokenType = Preferences.Get("tokenType", "");
                 LoadProfile();
             }
 
-            FindViewById<Button>(Resource.Id.loginbutton).Click += LgButton_Click;
-            FindViewById<Button>(Resource.Id.exitButton).Click += Exit_Clic;
-            FindViewById<Button>(Resource.Id.connectbutton).Click += Connect_Click;
+            ButtonsFunctions();
+          
             BottomNavigationView navigation = FindViewById<BottomNavigationView>(Resource.Id.navigation);
             navigation.SetOnNavigationItemSelectedListener(this);
             _timer = new Timer(2000)
@@ -75,9 +76,77 @@ namespace Lorry
                 AutoReset = false
             };
             _timer3.Elapsed += ProfileTimerElapsed;
+
+            _timerRequest = new Timer(2000)
+            {
+                AutoReset = false
+            };
+            _timerRequest.Elapsed += TimerRequest_Elapsed;
+
+
             if (Preferences.Get("isTryUnloadStatus", false))
             {
                 _timer2.Start();
+            }
+        }
+
+        private void TimerRequest_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            switch (_timerTask)
+            {
+                case Views.CloseTrip:
+                    {
+                        RunOnUiThread(() =>
+                        {
+                            NextTrip(Preferences.Get("nextTrip", false));
+                        });
+                        break;
+                    }
+            }
+        }
+
+        private void ButtonsFunctions()
+        {
+            FindViewById<Button>(Resource.Id.loginbutton).Click += LgButton_Click;
+            FindViewById<Button>(Resource.Id.exitButton).Click += Exit_Clic;
+            FindViewById<Button>(Resource.Id.connectbutton).Click += Connect_Click;
+            FindViewById<Button>(Resource.Id.goButton).Click += ToJob_Click;
+            FindViewById<Button>(Resource.Id.nogoButton).Click += ToRelax_Click;
+        }
+
+        private void ToRelax_Click(object sender, EventArgs e)
+        {
+            if (_searhMode) return;
+            NextTrip(false);
+        }
+
+        private void ToJob_Click(object sender, EventArgs e)
+        {
+            if (_searhMode) return;
+            NextTrip(true);
+        }
+
+        private async void NextTrip(bool v)
+        {
+            Preferences.Set("nextTrip", v); // todo надо сохранить режим при отключении !!!!! Додумать это
+            SelectViewMode(Views.SearchTrip);
+            _searhMode = true;
+            ShowSpinner(true);
+            var result = await _connector.NextTrip(v, _timeslotId);            
+            if(result == 401) // отвалилась авторизация
+            {
+                ShowSpinner(false);
+                SelectViewMode(Views.Login);
+                _searhMode = false;
+                return;
+            }
+            if(result == 0) // что-то пошло не так
+            {
+                ShowSpinner(false);
+                _timerTask = Views.CloseTrip;
+                SelectViewMode(Views.CloseTrip);
+                _searhMode = false;
+                _timerRequest.Start();
             }
         }
 
@@ -153,7 +222,7 @@ namespace Lorry
             alert.SetPositiveButton("Да", (senderAlert, args) =>
             {
                 Preferences.Set("isLogin", "no");
-                SelectViewMode(0);
+                SelectViewMode(Views.Login);
             });
             alert.SetNegativeButton("Нет", (senderAlert, args) =>
             {
@@ -189,6 +258,7 @@ namespace Lorry
                 Preferences.Set("server", _connector.Server);
                 Preferences.Set("tokenType", _connector.TokenType);
                 Preferences.Set("isLogin", "yes");
+                LoadProfile();
                 return;
             }
 
@@ -239,16 +309,16 @@ namespace Lorry
             switch (item.ItemId)
             {
                 case Resource.Id.navigation_home: // profile
-                    SelectViewMode(1);
+                    SelectViewMode(Views.Profile);
                     LoadProfile();
                     return true;
                 case Resource.Id.navigation_dashboard: // trip
-                    SelectViewMode(2);
+                    SelectViewMode(Views.Trip);
                     _stamp = -1;
                     LoadTrip(true);                    
                     return true;
                 case Resource.Id.navigation_notifications:
-                    SelectViewMode(3);
+                    SelectViewMode(Views.Notification);
                     return true;
             }
             return false;
@@ -262,10 +332,34 @@ namespace Lorry
             if(request == null)
             {
                 _timer3.Start();
+                return;
             }
-            var fio = request.driver.profile.surname + " " + (request.driver.profile.name?[0].ToString() ?? "") + 
+            if(request.driver.id == 0) // get error 401
+            {
+                Preferences.Set("isLogin", "no");
+                SelectViewMode(Views.Login);
+                return;
+
+            }
+            var tStr = request.driver.profile.surname + " " + (request.driver.profile.name?[0].ToString() ?? "") + 
                 "." + (request.driver.profile.patronymic?[0].ToString() ?? "") + ".";
-            FindViewById<TextView>(Resource.Id.fio).Text = fio;
+            FindViewById<TextView>(Resource.Id.fio).Text = tStr;
+            FindViewById<TextView>(Resource.Id.driverphone).Text = request.driver.phone;
+            tStr = "";
+            foreach(var car in request.driver.cars)
+            {
+                if (tStr.Length > 1) tStr += "\n";
+                tStr += car.number;
+            }
+            FindViewById<TextView>(Resource.Id.trucks).Text = "Транспорт:\n" + tStr;
+            FindViewById<TextView>(Resource.Id.farm).Text = "Базовое хозяйство:\n" + request.driver.base_farm.name;
+            tStr = "";
+            foreach(var sm in request.driver.working_turns)
+            {
+                if (tStr.Length > 0) tStr += ", ";
+                tStr += sm;
+            }
+            FindViewById<TextView>(Resource.Id.smens).Text = "Рабочие смены: " + tStr;
         }
 
         private async void LoadTrip(bool spin)
@@ -277,6 +371,12 @@ namespace Lorry
                 FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Invisible;
             }
             var request = await _connector.LoadTrip();
+            if(request?.timeslot.status_id == 1 && _searhMode)
+            {
+                SelectViewMode(Views.Trip);
+                _searhMode = false;
+                ShowSpinner(false);
+            }
             if (spin)
             {
                 ShowSpinner(false);
@@ -330,7 +430,13 @@ namespace Lorry
 
         private void LoadLastTrip()
         {
-            _timeslotId =  Preferences.Get("timeslotId", 0);
+            var status = Preferences.Get("status", 0);
+            _timeslotId = Preferences.Get("timeslotId", 0);
+            if (status == 5) // Рейс завершен
+            {
+                CloseTrip();
+                return;
+            }
             _driverId = Preferences.Get("driverId", 0);
             _loadtime = Preferences.Get("loadtime", "");
             FindViewById<TextView>(Resource.Id.indexload).Text = Preferences.Get("farmIndex", "");           
@@ -340,7 +446,6 @@ namespace Lorry
             FindViewById<TextView>(Resource.Id.unloadPlace).Text = Preferences.Get("inloadPlace", "");
             FindViewById<TextView>(Resource.Id.tripnumber).Text = Preferences.Get("tripNumber", "");
             FindViewById<TextView>(Resource.Id.car).Text = Preferences.Get("plate", "");
-            var status = Preferences.Get("status", 0);
             var statusBar = FindViewById<TextView>(Resource.Id.status);
             switch (status)
             {
@@ -372,36 +477,75 @@ namespace Lorry
             }
         }
 
+        /// <summary>
+        /// Форма закрытия рейса
+        /// </summary>
+        private void CloseTrip()
+        {
+            if (_searhMode)
+            {
+                SelectViewMode(Views.SearchTrip);
+                return;
+            }
+            SelectViewMode(Views.CloseTrip);
+        }
+
         private void ShowSpinner(bool state)
         {
             FindViewById<ProgressBar>(Resource.Id.spinner).Visibility = state ? ViewStates.Visible : ViewStates.Gone;
         }
 
-        private void SelectViewMode(int mode)
+        private void SelectViewMode(Views mode)
         {
             switch(mode){
-                case 0:
+                case Views.Login:
                     {
                         FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.authpanel).Visibility = ViewStates.Visible;
                         FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
                         break;
                     }
-                case 1:
+                case Views.Profile:
                     {
                         FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Visible;
                         FindViewById<LinearLayout>(Resource.Id.authpanel).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Visible;
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
                         break;
                     }
-                case 2:
+                case Views.Trip:
                     {
                         FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Visible;
                         FindViewById<LinearLayout>(Resource.Id.authpanel).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Visible;
+                        FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        break;
+                    }
+                case Views.CloseTrip:
+                    {
+                        FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Visible;
+                        FindViewById<LinearLayout>(Resource.Id.authpanel).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Visible;
+                        FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        break;
+                    }
+                case Views.SearchTrip:
+                    {
+                        FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Visible;
+                        FindViewById<LinearLayout>(Resource.Id.authpanel).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Visible;
                         break;
                     }
             }

@@ -27,5 +27,41 @@
             android:textSize="12pt"
             android:layout_gravity="left"
             android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+            android:id="@+id/driverphone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="textStart"
+            android:layout_marginLeft="10px"        
+            android:textSize="12pt"
+            android:layout_gravity="left"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+            android:id="@+id/trucks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="textStart"
+            android:layout_marginLeft="10px"        
+            android:textSize="12pt"
+            android:layout_gravity="left"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+            android:id="@+id/farm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="textStart"
+            android:layout_marginLeft="10px"        
+            android:textSize="12pt"
+            android:layout_gravity="left"
+            android:textColor="@color/abc_decor_view_status_guard"/>
+    <TextView
+            android:id="@+id/smens"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="textStart"
+            android:layout_marginLeft="10px"        
+            android:textSize="12pt"
+            android:layout_gravity="left"
+            android:textColor="@color/abc_decor_view_status_guard"/>
 
 </LinearLayout>
