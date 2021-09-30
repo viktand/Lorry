@@ -12,6 +12,7 @@
     <include layout="@layout/trip_view"/>
     <include layout="@layout/closetrip_view"/>
     <include layout="@layout/tripsearch_view"/>
+    <include layout="@layout/startJob_view"/>
         
 
     <ProgressBar

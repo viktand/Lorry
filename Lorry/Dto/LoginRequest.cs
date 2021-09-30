@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Lorry.Dto
 {
-    public class LoginRequest
+    public class LoginRequest: CacheProperty
 	{
 		[JsonProperty("phone")]
 		public string Phone { get; set; }
@@ -25,11 +25,5 @@ namespace Lorry.Dto
 
 		[JsonProperty("notification_token")]
 		public string NotificationToken { get; set; }
-
-		[JsonProperty("version")]
-		public int Version { get; set; }
-
-		[JsonProperty("cache")]
-		public uint Cache { get; set; }
 	}
 }

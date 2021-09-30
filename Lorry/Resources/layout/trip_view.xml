@@ -9,33 +9,62 @@
     android:orientation="vertical"
     android:gravity="center_horizontal">
 
-    <TextView
-        android:id="@+id/status"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="12pt"
-        android:layout_margin="5px"
-        android:textAlignment="center"/>
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Номер рейса:"
+                android:layout_marginTop="4pt"
+                android:layout_marginLeft="1pt"
+                android:textSize="7pt"
+                android:textColor="@color/abc_decor_view_status_guard"/>
+            <TextView
+                android:id="@+id/tripnumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="1pt"
+                android:textSize="7pt"
+                android:textColor="@color/abc_decor_view_status_guard"/>
+        </LinearLayout>                
+        <TextView
+              android:id="@+id/status"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:textSize="12pt"
+              android:layout_margin="5pt"
+              android:textAlignment="center"
+              android:gravity="center"
+              android:padding="2pt"
+              android:background="@drawable/shape_border"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10px"
-        android:layout_marginTop="20px"
+        android:layout_marginTop="10px"
         android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Индекс места погрузки:"
-            android:textSize="10pt"
+            android:textSize="7pt"
             android:textColor="@color/abc_decor_view_status_guard"/>
         <TextView
             android:id="@+id/indexload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10pt"
-            android:textSize="10pt"
+            android:textSize="7pt"
             android:textColor="@color/abc_decor_view_status_guard"/>
             
     </LinearLayout>
@@ -47,19 +76,7 @@
         android:layout_marginTop="20px"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Номер рейса:"
-            android:textSize="10pt"
-            android:textColor="@color/abc_decor_view_status_guard"/>
-        <TextView
-            android:id="@+id/tripnumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10pt"
-            android:textSize="10pt"
-            android:textColor="@color/abc_decor_view_status_guard"/>
+        
             
     </LinearLayout>
 

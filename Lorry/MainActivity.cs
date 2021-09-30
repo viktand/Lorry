@@ -14,6 +14,10 @@ using System.Timers;
 using Lorry.Dto;
 using System.Globalization;
 using Android.Content.PM;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text;
+using Android.Graphics.Drawables;
 
 namespace Lorry
 {
@@ -30,6 +34,11 @@ namespace Lorry
         private string _loadtime;
         private Views _timerTask;
         private bool _searhMode;
+        private Views _curentView;
+        private string[] _carsList;
+        private AlertDialog _dialog;
+        private int _activCarId;
+        private string _phone;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -102,6 +111,14 @@ namespace Lorry
                         });
                         break;
                     }
+                case Views.StartJob:
+                    {
+                        RunOnUiThread(() =>
+                        {
+                            RequestJob();
+                        });
+                        break;
+                    }
             }
         }
 
@@ -112,6 +129,116 @@ namespace Lorry
             FindViewById<Button>(Resource.Id.connectbutton).Click += Connect_Click;
             FindViewById<Button>(Resource.Id.goButton).Click += ToJob_Click;
             FindViewById<Button>(Resource.Id.nogoButton).Click += ToRelax_Click;
+            FindViewById<Switch>(Resource.Id.switchJob).Click += ReturnToJob_Click;
+            FindViewById<TextView>(Resource.Id.editPhone).FocusChange += Phone_FocusChange;
+        }
+
+        private void Phone_FocusChange(object sender, View.FocusChangeEventArgs e)
+        {
+            if (e.HasFocus) return;
+            var textView = (sender as TextView);
+            _phone = textView.Text;
+            var stg = _phone.StartsWith("#");
+            var s = new StringBuilder();
+            foreach(char c in _phone)
+            {
+                if ("0123456789".Contains(c))
+                {
+                    s.Append(c);
+                }
+            }
+            _phone = s.ToString();
+            if(!((_phone.StartsWith("79") && _phone.Length == 11) ||
+                (_phone.StartsWith("9") && _phone.Length == 10) ||
+                (_phone.StartsWith("89") && _phone.Length == 11)))
+            {
+                var alert = new AlertDialog.Builder(this);
+                alert.SetTitle("Ошибка");
+                alert.SetMessage("Текст в строке телефонного номера не удалось распознать как телефонный номер");
+                alert.SetPositiveButton("Ok", (senderAlert, args) =>
+                {
+                    return;
+                });               
+                Dialog dialog = alert.Create();
+                dialog.Show();
+                return;
+            }
+            if (_phone.Length == 11) _phone = _phone.Substring(1);
+            _phone = "7" + _phone;
+            textView.Text = "+" + _phone.Insert(1, "(").Insert(5, ")").Insert(9, "-").Insert(12, "-");            
+        }
+
+        private void ReturnToJob_Click(object sender, EventArgs e)
+        {
+            var cars = Preferences.Get("cars", "");
+            if (cars.Equals(""))
+            {
+                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+                alert.SetTitle("Проверьте настройки");
+                alert.SetMessage("Сервер сообщает, что у вас нет машины для получения рейса. Обратитесь к диспетчеру для назначения машины");
+                alert.SetPositiveButton("Ок", (senderAlert, args) => {
+                    return;
+                });              
+                Dialog dialog = alert.Create();
+                dialog.Show();
+                return;
+            }
+            _carsList = cars.Split(";");
+            if(_carsList.Length > 1)
+            {
+                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+                alert.SetTitle("Выбор машины");
+                alert.SetMessage("У вас несколько машин. Чтобы получить рейс, выберите одну из них:");
+                alert.SetView(Resource.Layout.selectcar_view);
+                alert.SetPositiveButton("Отмена", (senderAlert, args) => {
+                    return;
+                });
+                _dialog = alert.Create();         
+                _dialog.Show();                
+                var list = _dialog.FindViewById<ListView>(Resource.Id.listcars);
+                var numbers = new List<string>();
+                _carsList.ToList().ForEach(x => numbers.Add(x.Split("-")[0]));
+                list.Adapter = new ArrayAdapter(this, Android.Resource.Layout.SimpleListItem1, numbers);
+                list.ItemClick += SelectCar_Click;
+                return;
+            }
+        }      
+
+        private void SelectCar_Click(object sender, AdapterView.ItemClickEventArgs e)
+        {
+            var list = sender as ListView;
+            var car = (string) list.GetItemAtPosition(e.Position);
+            _activCarId = int.Parse(_carsList.First(x => x.Contains(car)).Split("-")[1]);
+            _dialog.Dismiss();
+            Toast.MakeText(this, car, ToastLength.Short).Show();
+            RequestJob();
+        }
+
+        /// <summary>
+        /// Выход из режима неактивности
+        /// </summary>
+        private async void RequestJob()
+        {
+            ShowSpinner(true);
+            _searhMode = true;
+            SelectViewMode(Views.SearchTrip);
+            var result = await _connector.RequestJob(_activCarId);
+            if(result == 401)
+            {
+                ShowSpinner(false);
+                SelectViewMode(Views.Login);
+                _searhMode = false;
+                return;
+            }
+            if (result == 0) // что-то пошло не так todo: это надо протестировать. выглядит подозрительно
+            {
+                ShowSpinner(false);
+                _timerTask = Views.StartJob;
+                SelectViewMode(Views.StartJob);
+                _searhMode = false;
+                _timerRequest.Start();
+            }
+
         }
 
         private void ToRelax_Click(object sender, EventArgs e)
@@ -140,7 +267,7 @@ namespace Lorry
                 _searhMode = false;
                 return;
             }
-            if(result == 0) // что-то пошло не так
+            if(result == 0) // что-то пошло не так todo: это надо протестировать. выглядит подозрительно
             {
                 ShowSpinner(false);
                 _timerTask = Views.CloseTrip;
@@ -241,10 +368,10 @@ namespace Lorry
         {
             var imm = (InputMethodManager)GetSystemService(InputMethodService);
             imm.HideSoftInputFromWindow(CurrentFocus.WindowToken, 0);
-            var phone = FindViewById<EditText>(Resource.Id.editPhone).Text;
+            //var phone = FindViewById<EditText>(Resource.Id.editPhone).Text;
             var password = FindViewById<EditText>(Resource.Id.editPassword).Text;
             ShowSpinner(true);
-            var request = await _connector.Login(phone, password);
+            var request = await _connector.Login(_phone, password);
             ShowSpinner(false);
             if (request)
             {
@@ -252,7 +379,7 @@ namespace Lorry
                 authPanel.Visibility = ViewStates.Gone;
                 FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Visible;
                 FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Visible;
-                Preferences.Set("phone", phone);
+                Preferences.Set("phone", _phone);
                 Preferences.Set("password", password);
                 Preferences.Set("token", _connector.Token);
                 Preferences.Set("server", _connector.Server);
@@ -262,7 +389,7 @@ namespace Lorry
                 return;
             }
 
-            if (LastLogin(phone, password))
+            if (LastLogin(_phone, password))
             {
                 return;
             }
@@ -346,11 +473,18 @@ namespace Lorry
             FindViewById<TextView>(Resource.Id.fio).Text = tStr;
             FindViewById<TextView>(Resource.Id.driverphone).Text = request.driver.phone;
             tStr = "";
+            var cars = "";
             foreach(var car in request.driver.cars)
             {
-                if (tStr.Length > 1) tStr += "\n";
+                if (tStr.Length > 1) 
+                { 
+                    tStr += "\n";
+                    cars += ";";
+                }
                 tStr += car.number;
+                cars += $"{car.number}-{car.id}";
             }
+            Preferences.Set("cars", cars);
             FindViewById<TextView>(Resource.Id.trucks).Text = "Транспорт:\n" + tStr;
             FindViewById<TextView>(Resource.Id.farm).Text = "Базовое хозяйство:\n" + request.driver.base_farm.name;
             tStr = "";
@@ -368,10 +502,20 @@ namespace Lorry
             if (spin)
             {
                 ShowSpinner(true);
-                FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Invisible;
+                SelectViewMode(Views.Trip);
             }
             var request = await _connector.LoadTrip();
-            if(request?.timeslot.status_id == 1 && _searhMode)
+            if(request?.timeslot.status_id == 0) // нет рейса
+            {
+                if (_curentView != Views.StartJob && ! _searhMode)
+                {
+                    ShowSpinner(false);
+                    SelectViewMode(Views.StartJob);
+                }
+                _timer.Start();
+                return;
+            }
+            if(request?.timeslot.status_id == 1 && _searhMode) // пришел новый рейс
             {
                 SelectViewMode(Views.Trip);
                 _searhMode = false;
@@ -384,7 +528,7 @@ namespace Lorry
             var stamp = request != null ? request.GetHashCode() : -1;                       
             if (stamp != _stamp)
             {
-                FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Visible;
+                if(_curentView != Views.Trip) SelectViewMode(Views.Trip);
                 if (request == null)
                 {
                     LoadLastTrip();
@@ -451,26 +595,27 @@ namespace Lorry
             {
                 case 1:
                     statusBar.SetTextColor(Android.Graphics.Color.Black);
-                    statusBar.SetBackgroundColor(Android.Graphics.Color.Orange);
                     statusBar.Text = "Назначен";
+                    statusBar.SetTextColor(Android.Graphics.Color.Orange);
+                    statusBar.SetBackgroundResource(Resource.Drawable.shape_border_newtrip);
                     FindViewById<Button>(Resource.Id.connectbutton).Visibility = ViewStates.Visible;
-                    ShowConnectButton(Preferences.Get("isLoader", true));
+                    ShowConnectButton(Preferences.Get("isLoader", true));                 
                     break;
                 case 3:
-                    statusBar.SetTextColor(Android.Graphics.Color.Black);
-                    statusBar.SetBackgroundColor(Android.Graphics.Color.Green);
+                    statusBar.SetTextColor(Android.Graphics.Color.DarkGreen);
+                    statusBar.SetBackgroundResource(Resource.Drawable.shape_border_loaded);
                     statusBar.Text = "Загружен";
                     FindViewById<Button>(Resource.Id.connectbutton).Visibility = ViewStates.Gone;
                     break;
                 case 4:
-                    statusBar.SetTextColor(Android.Graphics.Color.Black);
-                    statusBar.SetBackgroundColor(Android.Graphics.Color.LightBlue);
+                    statusBar.SetTextColor(Android.Graphics.Color.ParseColor("#ff33b5e5"));
+                    statusBar.SetBackgroundResource(Resource.Drawable.shape_border_arived);
                     FindViewById<Button>(Resource.Id.connectbutton).Visibility = ViewStates.Gone;
                     statusBar.Text = "Прибыл";
                     break;
                 case 10:
-                    statusBar.SetTextColor(Android.Graphics.Color.LightGray);
-                    statusBar.SetBackgroundColor(Android.Graphics.Color.Blue);
+                    statusBar.SetTextColor(Android.Graphics.Color.ParseColor("#ff0000ff"));
+                    statusBar.SetBackgroundResource(Resource.Drawable.shape_border_unload);
                     FindViewById<Button>(Resource.Id.connectbutton).Visibility = ViewStates.Gone;
                     statusBar.Text = "На заводе";
                     break;
@@ -497,7 +642,8 @@ namespace Lorry
 
         private void SelectViewMode(Views mode)
         {
-            switch(mode){
+            _curentView = mode;
+            switch (mode){
                 case Views.Login:
                     {
                         FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Gone;
@@ -506,6 +652,7 @@ namespace Lorry
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.startJob).Visibility = ViewStates.Gone;
                         break;
                     }
                 case Views.Profile:
@@ -516,6 +663,7 @@ namespace Lorry
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.startJob).Visibility = ViewStates.Gone;
                         break;
                     }
                 case Views.Trip:
@@ -526,6 +674,7 @@ namespace Lorry
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Visible;
                         FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.startJob).Visibility = ViewStates.Gone;
                         break;
                     }
                 case Views.CloseTrip:
@@ -536,6 +685,7 @@ namespace Lorry
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Visible;
                         FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.startJob).Visibility = ViewStates.Gone;
                         break;
                     }
                 case Views.SearchTrip:
@@ -546,10 +696,23 @@ namespace Lorry
                         FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
                         FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Visible;
+                        FindViewById<LinearLayout>(Resource.Id.startJob).Visibility = ViewStates.Gone;
+                        break;
+                    }
+                case Views.StartJob:
+                    {
+                        FindViewById<BottomNavigationView>(Resource.Id.navigation).Visibility = ViewStates.Visible;
+                        FindViewById<LinearLayout>(Resource.Id.authpanel).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.homeview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.closetripview).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.tripSearch).Visibility = ViewStates.Gone;
+                        FindViewById<LinearLayout>(Resource.Id.startJob).Visibility = ViewStates.Visible;
                         break;
                     }
             }
         }
+       
     }
 }
 

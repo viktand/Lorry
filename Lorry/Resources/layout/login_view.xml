@@ -34,6 +34,7 @@
         android:id="@+id/editPhone"
         android:layout_marginHorizontal="20px"
         android:layout_marginTop="10px"
+        android:textSize="12pt"
         android:hint="Номер телефона"/>
 
     <EditText
@@ -43,6 +44,7 @@
         android:id="@+id/editPassword"
         android:layout_marginHorizontal="20px"
         android:layout_marginTop="10px"
+        android:textSize="12pt"
         android:hint="Пароль"/>
 
     <Button

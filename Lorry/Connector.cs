@@ -26,7 +26,6 @@ namespace Lorry
                 {
                     Phone = phone,
                     Password = password,
-                    Version = 1,
                     Token = "0000",
                     NotificationToken = "PKCHz4QRpC_h_XkT2btmm:APA91bFz5fVPk_avPpoDW6WhrVhamV67XLnnX-d3BzsSoI0hUmCBvxLXjLEinvkrS8qocQonyH7szigP6J1la3wBa8yczfoRj4b4eiqCQYiuq6JI616ceSMc8H9by737V72xFSlrpfrS"
                 };
@@ -58,6 +57,10 @@ namespace Lorry
                     {
                         webReq.Headers["authorization"] = TokenType + " " + Token;
                     });
+                    if (result.Contains("\"timeslot\":[]")) // нет рейса
+                    {
+                        return new Trip { timeslot = new Timeslot { status_id = 0 } };
+                    }
                     var response = JsonConvert.DeserializeObject<Trip>(result);
                     return response;
                 }catch
@@ -159,6 +162,36 @@ namespace Lorry
                         return new DriverProfile { driver = new Driver { id = 0 } };
                     }
                     return null;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Выход из режима неактивности
+        /// </summary>
+        /// <param name="activCarId"></param>
+        /// <returns></returns>
+        internal Task<int> RequestJob(int activCarId)
+        {
+            return Task.Run(() =>
+            {
+                var url = Server + $"/mobile/users/ready-to-trip";
+                var json = JsonConvert.SerializeObject(new TripRequest { Car = activCarId });
+                try
+                {
+                    var result = url.PostJsonToUrl(json, webReq =>
+                    {
+                        webReq.Headers["authorization"] = TokenType + " " + Token;
+                    });
+                    return 200;
+                }
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("401"))
+                    {
+                        return 401;
+                    }
+                    return 0;
                 }
             });
         }

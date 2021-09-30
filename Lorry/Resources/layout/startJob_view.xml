@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:minWidth="25px"
+    android:minHeight="25px"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/startJob">
+
+    <TextView     
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="textStart"     
+        android:textSize="12pt"
+        android:layout_gravity="center_horizontal"
+        android:text="Неактивный режим"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+
+    <TextView     
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"     
+        android:textSize="10pt"
+        android:layout_marginTop="10pt"
+        android:layout_gravity="center_horizontal"
+        android:text="Сейчас у вас нет рейса. Чтобы получить новый рейс, подтвердите свою готовность к поездке"
+        android:textColor="@color/abc_decor_view_status_guard"/>
+    
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25pt"
+        android:layout_gravity="center_horizontal">
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Не готов"
+                android:textSize="8pt"
+                android:layout_marginLeft="10pt"
+                android:layout_alignParentLeft="true"/>
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" 
+                android:layout_marginHorizontal="10pt"
+                android:id="@+id/switchJob" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Готов"
+                android:textSize="8pt"
+                android:layout_marginRight="10pt"
+                android:layout_alignParentRight="true"/>
+        </TableRow>
+    </TableLayout>
+</LinearLayout>
