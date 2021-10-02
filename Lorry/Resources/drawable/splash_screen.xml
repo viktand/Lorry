@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">  
+  <item
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content">
+    <shape   android:shape="rectangle"        >
+      <solid android:color="@android:color/white" />
+    </shape>
+  </item>
+  <item>
+    <bitmap
+        android:src="@drawable/hqdefault"
+        android:tileMode="disabled"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+  </item>
+</layer-list>

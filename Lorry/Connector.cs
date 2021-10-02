@@ -4,6 +4,9 @@ using ServiceStack;
 using Lorry.Dto;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Lorry
 {
@@ -15,6 +18,28 @@ namespace Lorry
         public string Token { get; set; }
         public string TokenType { get; set; }
         public string Server { get; set; }
+
+
+        /// <summary>
+        /// Пустое обращение к сервру, чтобы ServiceStack смирлся с протухшим сертификатом
+        /// </summary>
+        internal void SllOff()
+        {
+            Task.Run(() =>
+            {
+                var url = AuthServer + $"/mobile/password/create";
+                try
+                {
+                    ServicePointManager.ServerCertificateValidationCallback += new RemoteCertificateValidationCallback(ValidateRemoteCertificate);
+                    var client = new JsonServiceClient();
+                    var response = client.Get<string>(url);
+                }
+                catch (Exception e)
+                {
+                    return;
+                }
+            });
+        }
 
 
         public Task<bool> Login(string phone, string password)
@@ -166,6 +191,37 @@ namespace Lorry
             });
         }
 
+        internal Task<int> GetPassword(string phone)
+        {
+            return Task.Run(() =>
+            {
+                var url = AuthServer + $"/mobile/password/create?phone={phone}";                
+                try
+                {
+                    ServicePointManager.ServerCertificateValidationCallback += new RemoteCertificateValidationCallback(ValidateRemoteCertificate);
+                    var client = new JsonServiceClient();
+                    var response = client.Get<string>(url);
+
+                    //var result = url.GetJsonFromUrl();
+                    return 200;
+                }
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("Authentication failed"))
+                    {
+                        return 401;
+                    }
+                    return 0;
+                }
+            });
+        }
+
+        private static bool ValidateRemoteCertificate(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors policyErrors)
+        {
+            //Do something to check the certificate is valid. 
+            return true;
+        }
+
         /// <summary>
         /// Выход из режима неактивности
         /// </summary>
@@ -175,7 +231,7 @@ namespace Lorry
         {
             return Task.Run(() =>
             {
-                var url = Server + $"/mobile/users/ready-to-trip";
+                var url = Server + "/mobile/users/ready-to-trip";
                 var json = JsonConvert.SerializeObject(new TripRequest { Car = activCarId });
                 try
                 {

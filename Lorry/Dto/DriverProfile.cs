@@ -112,7 +112,7 @@ namespace Lorry.Dto
 
     public class CurrentTurn
     {
-        public int index { get; set; }
+        public int? index { get; set; }
         public string techDate { get; set; }
         public string periodFrom { get; set; }
         public string periodTo { get; set; }

@@ -47,7 +47,7 @@ namespace Lorry.Dto
         public string patronymic { get; set; }
         public object email { get; set; }
         public int created_by { get; set; }
-        public int updated_by { get; set; }
+        public int? updated_by { get; set; }
         public string created_at { get; set; }
         public string updated_at { get; set; }
         public object deleted_at { get; set; }
@@ -90,14 +90,14 @@ namespace Lorry.Dto
         public int status { get; set; }
         public object external_id { get; set; }
         public string app_version { get; set; }
-        public bool ready_to_trip { get; set; }
+        public bool? ready_to_trip { get; set; }
         public string ready_at { get; set; }
         public string ready_changed_at { get; set; }
         public object unready_at { get; set; }
-        public int active_car_id { get; set; }
+        public int? active_car_id { get; set; }
         public object factory_id { get; set; }
-        public bool is_factory_worker { get; set; }
-        public int base_farm_id { get; set; }
+        public bool? is_factory_worker { get; set; }
+        public int? base_farm_id { get; set; }
         public List<int> working_turns { get; set; }
         public string on_line_from { get; set; }
         public string notification_token { get; set; }

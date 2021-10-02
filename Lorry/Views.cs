@@ -19,6 +19,7 @@ namespace Lorry
         CloseTrip,
         StartJob,
         Notification,
-        SearchTrip
+        SearchTrip,
+        None
     }
 }
