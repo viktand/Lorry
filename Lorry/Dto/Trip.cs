@@ -21,18 +21,10 @@ namespace Lorry.Dto
         public object vin { get; set; }
         public int load_capacity { get; set; }
         public object holding_capacity { get; set; }
-        public string glonass { get; set; }
-        public object pts { get; set; }
-        public object sts { get; set; }
-        public object lease { get; set; }
-        public object created_by { get; set; }
-        public string created_at { get; set; }
-        public string updated_at { get; set; }
-        public object deleted_at { get; set; }
+        public string glonass { get; set; }     
         public int type { get; set; }
         public object company_id { get; set; }
         public int status { get; set; }
-        public int updated_by { get; set; }
         public object external_id { get; set; }
         public bool hidden { get; set; }
         public int tms_id { get; set; }
@@ -79,12 +71,7 @@ namespace Lorry.Dto
     public class Driver
     {
         public int id { get; set; }
-        public string phone { get; set; }
-        public object created_by { get; set; }
-        public int updated_by { get; set; }
-        public string created_at { get; set; }
-        public string updated_at { get; set; }
-        public object deleted_at { get; set; }
+        public string phone { get; set; }   
         public object company_id { get; set; }
         public bool isForeign { get; set; }
         public int status { get; set; }
@@ -145,7 +132,7 @@ namespace Lorry.Dto
         public string loading_date { get; set; }
         public string loading_time_from { get; set; }
         public string loading_time_to { get; set; }
-        public object loading_place { get; set; }
+        public string loading_place { get; set; }
         public int loading_cargo_station_id { get; set; }
         public string unloading_date { get; set; }
         public string unloading_time_from { get; set; }

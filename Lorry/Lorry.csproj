@@ -72,8 +72,10 @@
     <Compile Include="Dto\LoginResponse.cs" />
     <Compile Include="Dto\LogTrip.cs" />
     <Compile Include="Dto\DriverProfile.cs" />
+    <Compile Include="Dto\ToLoaderMessage.cs" />
     <Compile Include="Dto\Trip.cs" />
     <Compile Include="Dto\TripRequest.cs" />
+    <Compile Include="LoaderConnector.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

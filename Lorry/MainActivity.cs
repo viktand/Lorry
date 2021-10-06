@@ -17,6 +17,8 @@ using Android.Content.PM;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using Android.Net.Wifi;
+
 
 namespace Lorry
 {
@@ -25,7 +27,8 @@ namespace Lorry
     public class MainActivity : AppCompatActivity, BottomNavigationView.IOnNavigationItemSelectedListener
     {
         private Connector _connector;
-        private Timer _timer, _timer2, _timer3, _timerRequest;
+        private LoaderConnector _loaderConnector;
+        private Timer _timer, _timer2, _timer3, _timerRequest, _wifitimer;
         private bool _loadMode;
         private int _timeslotId;
         private int _driverId;
@@ -39,6 +42,9 @@ namespace Lorry
         private int _activCarId;
         private string _phone;
         private bool _stg;
+        private string _lastNetwork;
+        private bool _isConnectToLoader;
+        private Timeslot _timeslot;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -49,6 +55,8 @@ namespace Lorry
             {
                 AuthServer = _stg ? "http://api.trucks-online.antagosoft.com" : "https://tms.prodimex.ru"
             };
+
+            _loaderConnector = new LoaderConnector();
                         
             Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
@@ -77,7 +85,7 @@ namespace Lorry
                 AutoReset = false
             };
             _timer.Elapsed += UpdateTimerElapsed;
-            _timer2 = new Timer(2000)
+            _timer2 = new System.Timers.Timer(2000)
             {
                 AutoReset = false
             };
@@ -94,11 +102,22 @@ namespace Lorry
             };
             _timerRequest.Elapsed += TimerRequest_Elapsed;
 
+            _wifitimer = new Timer(100)
+            {
+                AutoReset = false
+            };
+            _wifitimer.Elapsed += _wifitimer_Elapsed;
+
 
             if (Preferences.Get("isTryUnloadStatus", false))
             {
                 _timer2.Start();
-            }
+            }            
+        }
+
+        private void _wifitimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            WiFiConnect();
         }
 
         private void TimerRequest_Elapsed(object sender, ElapsedEventArgs e)
@@ -340,13 +359,55 @@ namespace Lorry
             _timer.Start();
         }
 
+
+        [Obsolete]
+        private async void WiFiConnect()
+        {
+            var wifiManager = (WifiManager)GetSystemService(WifiService);
+            var ssid = "field";
+            _lastNetwork = wifiManager.ConnectionInfo.SSID;
+            if(_lastNetwork.Contains(ssid))
+            {
+                if(!_isConnectToLoader)
+                {
+                    var result = await _loaderConnector.Send(_timeslot);
+                    if(result == 200)
+                    {
+                        //_isConnectToLoader = true;
+                    }                  
+                }
+                _wifitimer.Start();
+                return;
+            }
+            wifiManager.SetWifiEnabled(true);
+            
+            var config = new WifiConfiguration
+            {
+                Ssid = "\"" + ssid + "\"",
+            };
+
+            var list = wifiManager.ConfiguredNetworks;
+            foreach (var i in list.Where(x => x.Ssid.Contains(ssid) || x.Ssid.Contains(_lastNetwork)))
+            {
+                wifiManager.RemoveNetwork(i.NetworkId);
+            }
+            wifiManager.AddNetwork(config);
+            list = wifiManager.ConfiguredNetworks;
+            var sid = list.First(x => x.Ssid.Contains(ssid)).NetworkId;
+
+            wifiManager.Disconnect();
+            wifiManager.EnableNetwork(sid, true);
+            _wifitimer.Start();
+        }
+
+       
         private void Connect_Click(object sender, EventArgs e)
         {            
             if (_loadMode)
             {
-                // todo
+                WiFiConnect();
             }
-            else
+            else // установка статуса загрузки водителем
             {
                 AlertDialog.Builder alert = new AlertDialog.Builder(this);
                 alert.SetTitle("Загрузка");
@@ -597,6 +658,7 @@ namespace Lorry
 
         private void SaveTrip(Trip request)
         {
+            _timeslot = request.timeslot;
             Preferences.Set("driverId", request.timeslot.driver_id);
             Preferences.Set("timeslotId", request.timeslot.id);
             Preferences.Set("farmIndex", request.timeslot.loading_cargo_station.farm.alternative_name);
