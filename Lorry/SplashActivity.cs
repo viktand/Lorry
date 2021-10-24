@@ -1,12 +1,14 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using System.Threading.Tasks;
 
 namespace Lorry
 {
-    [Activity(Theme = "@style/AppThemeStart", MainLauncher = true, NoHistory = true)]
+    [Activity(Theme = "@style/AppThemeStart", MainLauncher = true, NoHistory = true,
+        ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation, ScreenOrientation = ScreenOrientation.Portrait)]
     public class SplashActivity : AppCompatActivity
     {
         static readonly string TAG = "X:" + typeof(SplashActivity).Name;

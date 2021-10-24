@@ -7,16 +7,28 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Lorry.Models;
 
 namespace Lorry
 {
     // общение с сервером
     public class Connector
-    {        
+    {
+        public Connector(UserModel user)
+        {
+            Server = user.Server;
+            Token = user.Token;
+            TokenType = user.TokenType;
+            AuthServer = user.IsStaging ? "http://api.trucks-online.antagosoft.com" : "https://tms.prodimex.ru";
+            SllOff();
+        }
+
         public string AuthServer { get; set; }
 
         public string Token { get; set; }
+       
         public string TokenType { get; set; }
+        
         public string Server { get; set; }
 
 
@@ -42,7 +54,7 @@ namespace Lorry
         }
 
 
-        public Task<bool> Login(string phone, string password)
+        public Task<int> Login(string phone, string password)
         {
             return Task.Run(() =>
             {
@@ -62,11 +74,15 @@ namespace Lorry
                     Server = response.Server;
                     Token = response.Token;
                     TokenType = response.TokenType;
-                    return true;
+                    return 200;
                 }
-                catch
-                {                   
-                    return false;
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("401"))
+                    {
+                        return 401;
+                    }
+                    return 0;
                 }
             });
         }  
@@ -77,7 +93,7 @@ namespace Lorry
             {
                 try
                 {
-                    var url = Server + "/mobile/users/trip";
+                     var url = Server + "/mobile/users/trip";
                     var result = url.GetJsonFromUrl(requestFilter: webReq =>
                     {
                         webReq.Headers["authorization"] = TokenType + " " + Token;
@@ -88,8 +104,9 @@ namespace Lorry
                     }
                     var response = JsonConvert.DeserializeObject<Trip>(result);
                     return response;
-                }catch
+                }catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     return null;
                 }
             });
@@ -166,7 +183,7 @@ namespace Lorry
             });
         }
 
-        internal Task<DriverProfile> LoadProfile()
+        public Task<DriverProfile> LoadProfile()
         {
             return Task.Run(() =>
             {

@@ -52,12 +52,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20px"
-        android:id="@+id/loginbutton"/>
+        android:id="@+id/loginbutton"
+        android:textColor="#fff"
+        android:backgroundTint="#ff1264ad"/>
    
     <Button
         android:text="Получить пароль в СМС"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20px"
-        android:id="@+id/newpassbutton"/>
+        android:id="@+id/newpassbutton"
+        android:textColor="#fff"
+        android:backgroundTint="#ff1264ad"/>
 </LinearLayout>

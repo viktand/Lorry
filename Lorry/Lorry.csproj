@@ -75,11 +75,20 @@
     <Compile Include="Dto\ToLoaderMessage.cs" />
     <Compile Include="Dto\Trip.cs" />
     <Compile Include="Dto\TripRequest.cs" />
+    <Compile Include="Extentions.cs" />
+    <Compile Include="ILorryActivity.cs" />
     <Compile Include="LoaderConnector.cs" />
     <Compile Include="MainActivity.cs" />
+    <Compile Include="Models\LoginResults.cs" />
+    <Compile Include="Models\Statuses.cs" />
+    <Compile Include="Models\TripModel.cs" />
+    <Compile Include="Models\UserModel.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashActivity.cs" />
+    <Compile Include="ViewModel\Profile_vm.cs" />
+    <Compile Include="ViewModel\Trip_vm.cs" />
+    <Compile Include="ViewModel\Trip_wifi.cs" />
     <Compile Include="Views.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +190,18 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\hqdefault.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{F5DD925A-4946-4E10-B1F7-3BF242649B12}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\shape_border_connected.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

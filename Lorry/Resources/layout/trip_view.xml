@@ -161,6 +161,7 @@
         android:layout_marginHorizontal="20px"
         android:layout_marginTop="20px"
         android:id="@+id/connectbutton"
-        />
+        android:textColor="#fff"
+        android:backgroundTint="#ff1264ad"/>
 
 </LinearLayout>
